@@ -24,7 +24,7 @@ object RedditModel {
                     val is_video: Boolean,
                     val created_utc: Long,
                     val thumbnail: String, //url or self or image or default
-                    val thumbnail_height: Int?, // or null
+                    val thumbnail_height: Int?,
                     val thumbnail_width: Int?,
                     val preview: Preview,
                     val num_comments: Int)

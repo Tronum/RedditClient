@@ -1,36 +1,86 @@
 package tronum.redditclient
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import tronum.redditclient.api.RedditApiService
-import tronum.redditclient.api.RedditModel
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import kotlinx.android.synthetic.main.activity_main.*
+import tronum.redditclient.view.base.BaseFragment
+import tronum.redditclient.view.MainScreenFragment
 
 class MainActivity : AppCompatActivity() {
-    private val redditApiService by lazy {
-        RedditApiService.create()
-    }
+    private val visibleFragments: List<Fragment>
+        get() {
+            val visible = ArrayList<Fragment>()
+            val fm = supportFragmentManager
+            val fragments = fm.fragments
+            if (fragments != null) {
+                for (fragment in fragments) {
+                    if (fragment != null && fragment.isVisible && fragment.userVisibleHint)
+                        visible.add(fragment)
+                }
+            }
+            return visible
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        beginTopFetching()
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        showMainScreen()
     }
 
-    private fun beginTopFetching() {
-        redditApiService.getTop()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({showResult(it)}, {showError(it.message)})
+    private fun showMainScreen() {
+        showFragment(MainScreenFragment.newInstance(), R.id.fragmentContainer)
     }
 
-    private fun showResult(response: RedditModel.TopResponse) {
-        Log.v("MainActivity", "Success")
+    private fun showFragment(fragment: BaseFragment<*>, containerViewId: Int) {
+        clearFragmentStack()
+        supportFragmentManager.beginTransaction()
+            .replace(containerViewId, fragment, fragment.javaClass.simpleName)
+            .commitAllowingStateLoss()
     }
 
-    private fun showError(message: String?) {
-        Log.e("MainActivity", message)
+    private fun showFragmentBackStacked(fragment: BaseFragment<*>, containerViewId: Int) {
+        val tag = fragment.javaClass.simpleName
+        supportFragmentManager.beginTransaction()
+            .replace(containerViewId, fragment, tag)
+            .addToBackStack(tag)
+            .commitAllowingStateLoss()
+    }
+
+    private fun clearFragmentStack() {
+        val fragmentManager = supportFragmentManager
+        while (fragmentManager.backStackEntryCount > 0) {
+            val first = fragmentManager.getBackStackEntryAt(0)
+            fragmentManager.popBackStackImmediate(first.name, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
+    }
+
+    private fun popToRootFragment() {
+        supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    }
+
+    private fun popFragment(): Boolean {
+        return supportFragmentManager.popBackStackImmediate()
+    }
+
+    override fun onBackPressed() {
+        var handled = false
+        val visibleFragment = getVisibleFragment()
+        if (visibleFragment != null && visibleFragment is BaseFragment<*>) {
+            handled = visibleFragment.onBackPressed()
+        }
+        if (!handled) {
+            super.onBackPressed()
+        }
+    }
+
+    private fun getVisibleFragment(): Fragment? {
+        return when (visibleFragments.size) {
+            1 -> visibleFragments[0]
+            else -> null
+        }
     }
 }
