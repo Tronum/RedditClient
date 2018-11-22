@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">RedditClient</string>
+    <string name="posted_by">Posted by u/%s %s</string>
+    <string name="comments">%d Comments</string>
 </resources>

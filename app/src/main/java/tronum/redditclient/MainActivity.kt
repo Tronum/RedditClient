@@ -14,11 +14,9 @@ class MainActivity : AppCompatActivity() {
             val visible = ArrayList<Fragment>()
             val fm = supportFragmentManager
             val fragments = fm.fragments
-            if (fragments != null) {
-                for (fragment in fragments) {
-                    if (fragment != null && fragment.isVisible && fragment.userVisibleHint)
-                        visible.add(fragment)
-                }
+            for (fragment in fragments) {
+                if (fragment != null && fragment.isVisible && fragment.userVisibleHint)
+                    visible.add(fragment)
             }
             return visible
         }
@@ -27,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
+        supportActionBar?.setDisplayShowTitleEnabled(true)
         showMainScreen()
     }
 

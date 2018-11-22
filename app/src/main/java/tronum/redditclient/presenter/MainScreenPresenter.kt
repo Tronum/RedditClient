@@ -1,5 +1,6 @@
 package tronum.redditclient.presenter
 
+import android.annotation.SuppressLint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import tronum.redditclient.api.RedditApiService
@@ -19,10 +20,11 @@ class MainScreenPresenter(view: IMainScreenView) : Presenter<IMainScreenView>(vi
         beginTopFetching()
     }
 
+    @SuppressLint("CheckResult")
     private fun beginTopFetching() {
         redditApiService.getTop()
             .map { it.data.children }
-            .map { it.map { item -> PostItem(item.data.title) }.toMutableList() }
+            .map { it.map { item -> PostItem.parse(item) }.toMutableList() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ showPosts(it) }, { showError(it.message) })
