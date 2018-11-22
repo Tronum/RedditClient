@@ -8,8 +8,7 @@ data class PostItem(val title: String,
                     val createdTime: Long,
                     val commentsCount: Int,
                     val thumbnail: String,
-                    val thumbnail_height: Int?,
-                    val thumbnail_width: Int?,
+                    val fullImage: String?,
                     val isNsfw: Boolean) {
     companion object {
         fun parse(metadata: RedditModel.PostMetadata): PostItem {
@@ -20,8 +19,7 @@ data class PostItem(val title: String,
                 metadata.data.created_utc * 1000L,
                 metadata.data.num_comments,
                 metadata.data.thumbnail,
-                metadata.data.thumbnail_height,
-                metadata.data.thumbnail_width,
+                metadata.data.url,
                 metadata.data.over_18)
         }
     }

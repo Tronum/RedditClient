@@ -37,6 +37,11 @@ class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView 
         super.onViewCreated(view, savedInstanceState)
         linearLayoutManager = LinearLayoutManager(context)
         adapter = PostAdapter()
+        adapter.onThumbnailClickListener = object : PostAdapter.OnThumbnailClickListener {
+            override fun onThumbnailClicked(url: String) {
+                presenter?.onThumbnailClicked(url)
+            }
+        }
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.adapter = adapter
     }
@@ -51,5 +56,9 @@ class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView 
 
     private fun showToast(string: String) {
         Toast.makeText(context, string, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showFullSizeImage(url: String) {
+        FullSizeImageFragment.newInstance(url).show(childFragmentManager, FullSizeImageFragment.TAG)
     }
 }

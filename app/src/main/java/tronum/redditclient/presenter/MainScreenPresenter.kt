@@ -9,7 +9,6 @@ import tronum.redditclient.contract.IMainScreenView
 import tronum.redditclient.data.PostItem
 import tronum.redditclient.presenter.base.Presenter
 
-
 class MainScreenPresenter(view: IMainScreenView) : Presenter<IMainScreenView>(view), IMainScreenPresenter {
     private val redditApiService by lazy {
         RedditApiService.create()
@@ -38,5 +37,9 @@ class MainScreenPresenter(view: IMainScreenView) : Presenter<IMainScreenView>(vi
         message?.let {
             view?.showError(it)
         }
+    }
+
+    override fun onThumbnailClicked(url: String) {
+        view?.showFullSizeImage(url)
     }
 }

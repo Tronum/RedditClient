@@ -7,6 +7,9 @@ import tronum.redditclient.view.base.IView
 interface IMainScreenView: IView {
     fun showError(message: String)
     fun showPosts(posts: List<PostItem>)
+    fun showFullSizeImage(url: String)
 }
 
-interface IMainScreenPresenter: IPresenter
+interface IMainScreenPresenter: IPresenter {
+    fun onThumbnailClicked(url: String)
+}

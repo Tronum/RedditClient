@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import kotlinx.android.synthetic.main.activity_main.*
+import org.greenrobot.eventbus.EventBus
 import tronum.redditclient.view.base.BaseFragment
 import tronum.redditclient.view.MainScreenFragment
 
