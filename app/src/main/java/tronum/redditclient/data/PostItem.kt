@@ -9,7 +9,8 @@ data class PostItem(val title: String,
                     val commentsCount: Int,
                     val thumbnail: String,
                     val fullImage: String?,
-                    val isNsfw: Boolean) {
+                    val isVideo: Boolean,
+                    val isSelf: Boolean) {
     companion object {
         fun parse(metadata: RedditModel.PostMetadata): PostItem {
             return PostItem(
@@ -20,7 +21,8 @@ data class PostItem(val title: String,
                 metadata.data.num_comments,
                 metadata.data.thumbnail,
                 metadata.data.url,
-                metadata.data.over_18)
+                metadata.data.is_video,
+                metadata.data.is_self)
         }
     }
 }

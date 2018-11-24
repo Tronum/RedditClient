@@ -5,15 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.post_item.view.*
 import tronum.redditclient.R
 import tronum.redditclient.data.PostItem
+import tronum.redditclient.utils.setImage
 import java.util.*
 import java.util.concurrent.TimeUnit
-
 
 class PostAdapter : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
     var onThumbnailClickListener: OnThumbnailClickListener? = null
@@ -55,19 +52,13 @@ class PostAdapter : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
             if (hasThumbnail(item.thumbnail)) {
                 itemView.thumbnail.isVisible = true
                 itemView.thumbnail.setOnClickListener {
-                    item.fullImage?.let { url ->
-                        onThumbnailClickListener?.onThumbnailClicked(url)
+                    if ( !item.isVideo && !item.isSelf){
+                        item.fullImage?.let {url ->
+                            onThumbnailClickListener?.onThumbnailClicked(url)
+                        }
                     }
                 }
-                Glide
-                    .with(context)
-                    .load(item.thumbnail)
-                    .apply(
-                        RequestOptions()
-                            .placeholder(R.drawable.placeholder)
-                            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    )
-                    .into(itemView.thumbnail)
+                itemView.thumbnail.setImage(item.thumbnail)
             } else {
                 itemView.thumbnail.isVisible = false
             }

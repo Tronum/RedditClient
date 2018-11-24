@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_main.*
@@ -48,6 +49,8 @@ class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView 
 
     override fun showPosts(posts: List<PostItem>) {
         adapter.items = posts
+        recyclerView.isVisible = posts.isNotEmpty()
+        empty_view.isVisible = posts.isEmpty()
     }
 
     override fun showError(message: String) {

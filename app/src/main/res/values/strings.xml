@@ -2,4 +2,5 @@
     <string name="app_name">RedditClient</string>
     <string name="posted_by">Posted by u/%s %s</string>
     <string name="comments">%d Comments</string>
+    <string name="no_data_message">No data loaded\nSwipe down to refresh</string>
 </resources>
