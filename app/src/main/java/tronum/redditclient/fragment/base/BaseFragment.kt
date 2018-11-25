@@ -1,8 +1,9 @@
-package tronum.redditclient.view.base
+package tronum.redditclient.fragment.base
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import tronum.redditclient.presenter.base.IPresenter
+import tronum.redditclient.view.base.IView
 
 abstract class BaseFragment <P : IPresenter> : Fragment(), IView {
     protected abstract var presenter: P

@@ -1,4 +1,4 @@
-package tronum.redditclient
+package tronum.redditclient.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

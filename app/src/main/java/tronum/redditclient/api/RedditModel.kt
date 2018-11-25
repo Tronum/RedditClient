@@ -15,6 +15,7 @@ object RedditModel {
 
     data class Post(val subreddit_name_prefixed: String,
                     val title: String,
+                    val id: String,
                     val selftext: String,
                     val selftext_html: String?,
                     val author: String,
@@ -26,12 +27,15 @@ object RedditModel {
                     val thumbnail: String, //url or self or image or default
                     val thumbnail_height: Int?,
                     val thumbnail_width: Int?,
-                    val preview: Preview,
+                    val preview: Preview?,
                     val url: String?,
                     val num_comments: Int)
 
     data class Preview(val images: List<PreviewImage>,
+                       val reddit_video_preview: RedditVideoPreview?,
                        val enabled: Boolean)
+
+    data class RedditVideoPreview(val is_gif: Boolean)
 
     data class PreviewImage(val id: String,
                             val source: PreviewImageSource)

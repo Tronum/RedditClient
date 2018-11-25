@@ -1,12 +1,13 @@
-package tronum.redditclient
+package tronum.redditclient.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_main.*
+import tronum.redditclient.R
 import tronum.redditclient.utils.replaceFragment
-import tronum.redditclient.view.base.BaseFragment
-import tronum.redditclient.view.MainScreenFragment
+import tronum.redditclient.fragment.MainScreenFragment
+import tronum.redditclient.fragment.base.BaseFragment
 
 class MainActivity : AppCompatActivity() {
     private val visibleFragments: List<Fragment>

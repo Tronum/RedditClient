@@ -1,4 +1,4 @@
-package tronum.redditclient.view
+package tronum.redditclient.fragment
 
 import android.app.Dialog
 import android.app.DownloadManager
@@ -124,7 +124,7 @@ class FullSizeImageFragment: DialogFragment() {
     }
 
     companion object {
-        val TAG = FullSizeImageFragment.javaClass.simpleName
+        val TAG = FullSizeImageFragment::class.java.simpleName
         private const val KEY_URL = "key_url"
         private const val REQUEST_PERMISSION_CODE = 101
 
