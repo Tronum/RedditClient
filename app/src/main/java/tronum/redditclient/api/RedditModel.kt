@@ -29,6 +29,7 @@ object RedditModel {
                     val thumbnail_width: Int?,
                     val preview: Preview?,
                     val url: String?,
+                    val post_hint: String,
                     val num_comments: Int)
 
     data class Preview(val images: List<PreviewImage>,

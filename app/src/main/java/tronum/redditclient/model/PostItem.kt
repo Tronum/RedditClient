@@ -10,9 +10,8 @@ data class PostItem(val title: String,
                     val createdTime: Long,
                     val commentsCount: Int,
                     val thumbnail: String,
-                    val fullImage: String?,
-                    val isVideo: Boolean,
-                    val isSelf: Boolean,
+                    val fullImageUrl: String?,
+                    val isImage: Boolean,
                     val isGif: Boolean) {
     companion object {
         fun parse(metadata: RedditModel.PostMetadata): PostItem {
@@ -25,8 +24,7 @@ data class PostItem(val title: String,
                 metadata.data.num_comments,
                 metadata.data.thumbnail,
                 metadata.data.url,
-                metadata.data.is_video,
-                metadata.data.is_self,
+                metadata.data.post_hint == "image",
                 metadata.data.preview?.reddit_video_preview?.is_gif.valueOrDefault(false))
         }
     }

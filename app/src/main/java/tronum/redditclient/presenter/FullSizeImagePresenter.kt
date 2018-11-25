@@ -9,8 +9,17 @@ import tronum.redditclient.presenter.base.Presenter
 import tronum.redditclient.utils.isInternetAvailable
 
 class FullSizeImagePresenter(view: IFullSizeImageView) : Presenter<IFullSizeImageView>(view), IFullSizeImagePresenter {
-    override fun onFileDownloadedEvent() {
-        view?.showFileDownloaded()
+    private var url: String? = null
+    private var isGif = false
+
+    override fun updateValues(url: String, isGif: Boolean) {
+        this.url = url
+        this.isGif = isGif
+        if (!isGif) {
+            view?.loadImage(url)
+        } else {
+            view?.loadGif(url)
+        }
     }
 
     override fun onCloseButtonPressed() {
@@ -23,7 +32,7 @@ class FullSizeImagePresenter(view: IFullSizeImageView) : Presenter<IFullSizeImag
         } else if (!App.instance.isInternetAvailable()) {
             view?.showNoInternetMessage()
         } else {
-            view?.saveImage()
+            url?.let { view?.saveImage(it)  }
         }
     }
 

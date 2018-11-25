@@ -63,9 +63,9 @@ class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView
     private fun initAdapter() {
         linearLayoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         adapter = RedditTopListAdapter { viewModel.retry() }
-        adapter.onThumbnailClickListener = object : RedditTopListAdapter.OnThumbnailClickListener {
-            override fun onThumbnailClicked(url: String, isImage: Boolean) {
-                presenter?.onThumbnailClicked(url, isImage)
+        adapter.onItemClickListener = object : RedditTopListAdapter.OnItemClickListener {
+            override fun onItemClicked(item: PostItem) {
+                presenter.onItemClicked(item.fullImageUrl, item.isImage, item.isGif)
             }
         }
     }
@@ -107,12 +107,12 @@ class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView
 
     override fun showOpenThumbnailError() {
         activity?.let {
-            showSnackbar(it, "No data to open full size")
+            showSnackbar(it, "No full size picture.")
         }
     }
 
-    override fun showFullSizeImage(url: String) {
-        FullSizeImageFragment.newInstance(url).show(childFragmentManager, FullSizeImageFragment.TAG)
+    override fun showFullSizeImage(url: String, isGif: Boolean) {
+        FullSizeImageFragment.newInstance(url, isGif).show(childFragmentManager, FullSizeImageFragment.TAG)
     }
 
     companion object {

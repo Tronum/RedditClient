@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit
 
 class RedditTopListAdapter(private val retry: () -> Unit) :
     PagedListAdapter<PostItem, RecyclerView.ViewHolder>(diffCallback) {
-    var onThumbnailClickListener: OnThumbnailClickListener? = null
+    var onItemClickListener: OnItemClickListener? = null
     private var state = State.LOADING
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == ITEM_VIEW_TYPE)
-            ItemViewHolder.create(parent, onThumbnailClickListener)
+            ItemViewHolder.create(parent, onItemClickListener)
         else FooterViewHolder.create(retry, parent)
     }
 
@@ -64,8 +64,8 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
     }
 
     companion object {
-        private val ITEM_VIEW_TYPE = 1
-        private val FOOTER_VIEW_TYPE = 2
+        private const val ITEM_VIEW_TYPE = 1
+        private const val FOOTER_VIEW_TYPE = 2
 
         val diffCallback = object : DiffUtil.ItemCallback<PostItem>() {
             override fun areItemsTheSame(oldItem: PostItem, newItem: PostItem): Boolean {
@@ -78,10 +78,9 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
         }
     }
 
-    interface OnThumbnailClickListener {
-        fun onThumbnailClicked(url: String, isImage: Boolean)
+    interface OnItemClickListener {
+        fun onItemClicked(item: PostItem)
     }
-
 
     class FooterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(status: State?) {
@@ -100,7 +99,7 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
 
     class ItemViewHolder(
         itemView: View,
-        private val onThumbnailClickListener: OnThumbnailClickListener?
+        private val listener: OnItemClickListener?
     ) : RecyclerView.ViewHolder(itemView) {
         fun bindItems(item: PostItem?) {
             item?.let {
@@ -115,12 +114,7 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
                 itemView.comments.text = context.getString(R.string.comments, item.commentsCount)
                 if (hasThumbnail(item.thumbnail)) {
                     itemView.thumbnail.isVisible = true
-                    itemView.thumbnail.setOnClickListener {
-                        item.fullImage?.let { url ->
-                            val isImage = !item.isVideo && !item.isSelf && !item.isGif
-                            onThumbnailClickListener?.onThumbnailClicked(url, isImage)
-                        }
-                    }
+                    itemView.thumbnail.setOnClickListener { item.fullImageUrl?.let { listener?.onItemClicked(item) } }
                     itemView.thumbnail.setImage(item.thumbnail)
                 } else {
                     itemView.thumbnail.isVisible = false
@@ -129,7 +123,7 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
         }
 
         companion object {
-            fun create(parent: ViewGroup, onThumbnailClickListener: OnThumbnailClickListener?): ItemViewHolder {
+            fun create(parent: ViewGroup, onThumbnailClickListener: OnItemClickListener?): ItemViewHolder {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_list_top, parent, false)
                 return ItemViewHolder(view, onThumbnailClickListener)
             }

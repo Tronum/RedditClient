@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface  RedditApiService{
+interface RedditApiService{
     @GET("/top.json")
     fun getTop(
         @Query("limit") limit: Int,

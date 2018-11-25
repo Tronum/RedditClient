@@ -5,9 +5,9 @@ import tronum.redditclient.contract.IMainScreenView
 import tronum.redditclient.presenter.base.Presenter
 
 class MainScreenPresenter(view: IMainScreenView) : Presenter<IMainScreenView>(view), IMainScreenPresenter {
-    override fun onThumbnailClicked(url: String, isImage: Boolean) {
+    override fun onItemClicked(url: String?, isImage: Boolean, isGif: Boolean) {
         if (isImage)
-            view?.showFullSizeImage(url)
+            url?.let { view?.showFullSizeImage(url, isGif) }
         else
             view?.showOpenThumbnailError()
     }
