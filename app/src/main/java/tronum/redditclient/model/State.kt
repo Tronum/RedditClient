@@ -1,5 +1,5 @@
 package tronum.redditclient.model
 
 enum class State {
-    DONE, LOADING, ERROR
+    CONTENT, EMPTY_DATA, LOADING, ERROR
 }

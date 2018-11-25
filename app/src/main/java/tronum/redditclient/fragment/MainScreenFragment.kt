@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_main.*
@@ -16,17 +17,22 @@ import tronum.redditclient.adapter.RedditTopListAdapter
 import tronum.redditclient.contract.IMainScreenPresenter
 import tronum.redditclient.contract.IMainScreenView
 import tronum.redditclient.fragment.base.BaseFragment
+import tronum.redditclient.model.PostItem
 import tronum.redditclient.model.RedditTopListViewModel
 import tronum.redditclient.model.State
 import tronum.redditclient.presenter.MainScreenPresenter
 import tronum.redditclient.utils.logTag
 import tronum.redditclient.utils.showSnackbar
-import tronum.redditclient.utils.showToast
 
-class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView {
+class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView {
     private lateinit var adapter: RedditTopListAdapter
     private lateinit var viewModel: RedditTopListViewModel
     private lateinit var linearLayoutManager: LinearLayoutManager
+
+    private var osRefreshing = false
+
+    private val dataObserver = Observer<PagedList<PostItem>> { adapter.submitList(it) }
+    private val stateObserver = Observer<State> { onContentStateChanged(it) }
 
     override var presenter: IMainScreenPresenter = MainScreenPresenter(this)
 
@@ -36,36 +42,72 @@ class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(RedditTopListViewModel::class.java)
+        initViewModel()
+        initAdapter()
+        initListView()
+        initRefreshLayout()
+    }
+
+    private fun initRefreshLayout() {
+        swipeRefreshLayout.setOnRefreshListener {
+            osRefreshing = true
+            viewModel.refresh()
+        }
+    }
+
+    private fun initListView() {
+        recyclerView.layoutManager = linearLayoutManager
+        recyclerView.adapter = adapter
+    }
+
+    private fun initAdapter() {
         linearLayoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        adapter = RedditTopListAdapter{ viewModel.retry() }
+        adapter = RedditTopListAdapter { viewModel.retry() }
         adapter.onThumbnailClickListener = object : RedditTopListAdapter.OnThumbnailClickListener {
             override fun onThumbnailClicked(url: String, isImage: Boolean) {
                 presenter?.onThumbnailClicked(url, isImage)
             }
         }
-        recyclerView.layoutManager = linearLayoutManager
-        recyclerView.adapter = adapter
-        viewModel.topData.observe(this, Observer {
-            adapter.submitList(it)
-        })
-        viewModel.getState().observe(this, Observer {
-            Log.v(logTag(), "state ${it.name}")
-            swipeRefreshLayout.isRefreshing = viewModel.listIsEmpty() && it == State.LOADING
-            recyclerView.isVisible = !viewModel.listIsEmpty()
-            empty_view.isVisible = viewModel.listIsEmpty() && it != State.LOADING
-            if (!viewModel.listIsEmpty()) {
-                adapter.setState(it ?: State.DONE)
+    }
+
+    private fun initViewModel() {
+        viewModel = ViewModelProviders.of(this).get(RedditTopListViewModel::class.java)
+        viewModel.data.observe(this, dataObserver)
+        viewModel.state.observe(this, stateObserver)
+    }
+
+    private fun onContentStateChanged(state: State) {
+        Log.v(logTag(), "state ${state.name}")
+
+        swipeRefreshLayout.isRefreshing = viewModel.listIsEmpty() && state == State.LOADING
+        if (!viewModel.listIsEmpty()) adapter.setState(state)
+
+        when (state) {
+            State.LOADING -> {}
+            State.CONTENT -> showContent()
+            State.EMPTY_DATA -> showEmptyList()
+            State.ERROR -> {
+                if (viewModel.listIsEmpty() || osRefreshing) showEmptyList()
+                osRefreshing = false
             }
-            if (it == State.ERROR) {
-                showToast("Error. Can't load data")
-            }
-        })
+        }
+    }
+
+    private fun showEmptyList() {
+        osRefreshing = false
+        recyclerView.isVisible = false
+        empty_view.isVisible = true
+    }
+
+    private fun showContent() {
+        osRefreshing = false
+        recyclerView.isVisible = true
+        empty_view.isVisible = false
     }
 
     override fun showOpenThumbnailError() {
-        activity?.let { notNullActivity ->
-            showSnackbar(notNullActivity, "No data to open full size")
+        activity?.let {
+            showSnackbar(it, "No data to open full size")
         }
     }
 
@@ -74,7 +116,6 @@ class MainScreenFragment: BaseFragment<IMainScreenPresenter>(), IMainScreenView 
     }
 
     companion object {
-        private const val maxListSize = 50
         @JvmStatic
         fun newInstance(): MainScreenFragment {
             return MainScreenFragment()

@@ -36,20 +36,31 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position < super.getItemCount()) ITEM_VIEW_TYPE else FOOTER_VIEW_TYPE
+        return if (hasExtraRow() && position == itemCount - 1) {
+            FOOTER_VIEW_TYPE
+        } else {
+            ITEM_VIEW_TYPE
+        }
     }
 
-    override fun getItemCount(): Int {
-        return super.getItemCount() + if (hasFooter()) 1 else 0
-    }
-
-    private fun hasFooter(): Boolean {
-        return super.getItemCount() != 0 && (state == State.LOADING || state == State.ERROR)
+    private fun hasExtraRow(): Boolean {
+        return state == State.LOADING || state == State.ERROR
     }
 
     fun setState(state: State) {
+        val previousState = this.state
+        val previousExtraRow = hasExtraRow()
         this.state = state
-        notifyItemChanged(super.getItemCount())
+        val newExtraRow = hasExtraRow()
+        if (previousExtraRow != newExtraRow) {
+            if (previousExtraRow) {
+                notifyItemRemoved(itemCount)
+            } else {
+                notifyItemInserted(itemCount)
+            }
+        } else if (newExtraRow && previousState !== state) {
+            notifyItemChanged(itemCount - 1)
+        }
     }
 
     companion object {
