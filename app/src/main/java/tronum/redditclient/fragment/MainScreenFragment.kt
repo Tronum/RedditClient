@@ -49,13 +49,16 @@ class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView
         initAdapter()
         initListView()
         initSwipeToRefresh()
-        viewModel.showData()
+        if (savedInstanceState == null){
+            viewModel.showData()
+        }
     }
 
     private fun initSwipeToRefresh() {
         swipeRefreshLayout.setOnRefreshListener {
             isRefreshing = true
             viewModel.refresh()
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -94,7 +97,14 @@ class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView
 
         when (state) {
             State.RUNNING -> {}
-            State.SUCCESS -> if (!viewModel.listIsEmpty()) showContent() else showEmptyList()
+            State.SUCCESS -> {
+                showContent()
+                isRefreshing = false
+            }
+            State.EMPTY -> {
+                showEmptyList()
+                isRefreshing = false
+            }
             State.FAILED -> {
                 if (viewModel.listIsEmpty() || isRefreshing) showEmptyList()
                 isRefreshing = false
@@ -103,13 +113,11 @@ class MainScreenFragment : BaseFragment<IMainScreenPresenter>(), IMainScreenView
     }
 
     private fun showEmptyList() {
-        isRefreshing = false
         recyclerView.isVisible = false
         empty_view.isVisible = true
     }
 
     private fun showContent() {
-        isRefreshing = false
         recyclerView.isVisible = true
         empty_view.isVisible = false
     }

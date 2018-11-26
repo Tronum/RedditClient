@@ -15,17 +15,20 @@ import tronum.redditclient.data.Listing
 import tronum.redditclient.data.PostData
 import tronum.redditclient.model.RedditTopBoundaryCallback
 import tronum.redditclient.model.State
+import tronum.redditclient.utils.valueOrDefault
 import java.util.concurrent.Executor
 
 class RedditPostRepository(
     val db: RedditTopDatabase,
     private val apiService: RedditApiService,
     private val ioExecutor: Executor,
-    private val networkPageSize: Int = DEFAULT_NETWORK_PAGE_SIZE
+    private val networkPageSize: Int = pageSize
 ) {
+    private var itemSize = 0
 
     companion object {
-        private const val DEFAULT_NETWORK_PAGE_SIZE = 10
+        private const val pageSize = 10
+        private const val maxSize = 50
     }
 
     @MainThread
@@ -38,8 +41,8 @@ class RedditPostRepository(
         )
 
         val config = PagedList.Config.Builder()
-            .setPageSize(DEFAULT_NETWORK_PAGE_SIZE)
-            .setInitialLoadSizeHint(DEFAULT_NETWORK_PAGE_SIZE)
+            .setPageSize(pageSize)
+            .setInitialLoadSizeHint(pageSize)
             .setEnablePlaceholders(false)
             .build()
 
@@ -69,7 +72,10 @@ class RedditPostRepository(
         body!!.data.children.let { posts ->
             db.runInTransaction {
                 val items = posts.map { PostData.parse(it) }
-                db.topPostDao().insertPosts(items)
+                if (itemSize < maxSize) {
+                    db.topPostDao().insertPosts(items)
+                    itemSize += items.size
+                }
             }
         }
     }
@@ -91,8 +97,12 @@ class RedditPostRepository(
                     ioExecutor.execute {
                         db.runInTransaction {
                             insertResultIntoDb(response.body())
+                            if (response.body()?.data?.children?.isEmpty().valueOrDefault(true)){
+                                networkState.postValue(State.EMPTY)
+                            } else {
+                                networkState.postValue(State.SUCCESS)
+                            }
                         }
-                        networkState.postValue(State.SUCCESS)
                     }
                 }
             }

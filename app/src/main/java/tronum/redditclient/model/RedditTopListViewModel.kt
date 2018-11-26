@@ -19,7 +19,7 @@ class RedditTopListViewModel(repository: RedditPostRepository): ViewModel() {
     }
 
     fun refresh() {
-        repoResult.value?.refresh?.invoke()
+        data.value?.dataSource?.invalidate()
     }
 
     fun showData() {
