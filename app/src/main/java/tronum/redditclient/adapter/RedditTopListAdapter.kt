@@ -12,16 +12,16 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_list_footer.view.*
 import kotlinx.android.synthetic.main.item_list_top.view.*
 import tronum.redditclient.R
-import tronum.redditclient.model.PostItem
+import tronum.redditclient.data.PostData
 import tronum.redditclient.model.State
 import tronum.redditclient.utils.setImage
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class RedditTopListAdapter(private val retry: () -> Unit) :
-    PagedListAdapter<PostItem, RecyclerView.ViewHolder>(diffCallback) {
+    PagedListAdapter<PostData, RecyclerView.ViewHolder>(diffCallback) {
     var onItemClickListener: OnItemClickListener? = null
-    private var state = State.LOADING
+    private var state = State.RUNNING
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == ITEM_VIEW_TYPE)
@@ -44,7 +44,7 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
     }
 
     private fun hasExtraRow(): Boolean {
-        return state == State.LOADING || state == State.ERROR
+        return state == State.RUNNING || state == State.FAILED
     }
 
     fun setState(state: State) {
@@ -67,25 +67,25 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
         private const val ITEM_VIEW_TYPE = 1
         private const val FOOTER_VIEW_TYPE = 2
 
-        val diffCallback = object : DiffUtil.ItemCallback<PostItem>() {
-            override fun areItemsTheSame(oldItem: PostItem, newItem: PostItem): Boolean {
+        val diffCallback = object : DiffUtil.ItemCallback<PostData>() {
+            override fun areItemsTheSame(oldItem: PostData, newItem: PostData): Boolean {
                 return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: PostItem, newItem: PostItem): Boolean {
+            override fun areContentsTheSame(oldItem: PostData, newItem: PostData): Boolean {
                 return oldItem == newItem
             }
         }
     }
 
     interface OnItemClickListener {
-        fun onItemClicked(item: PostItem)
+        fun onItemClicked(item: PostData)
     }
 
     class FooterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(status: State?) {
-            itemView.progressBar.visibility = if (status == State.LOADING) VISIBLE else INVISIBLE
-            itemView.errorMsg.visibility = if (status == State.ERROR) VISIBLE else INVISIBLE
+            itemView.progressBar.visibility = if (status == State.RUNNING) VISIBLE else INVISIBLE
+            itemView.errorMsg.visibility = if (status == State.FAILED) VISIBLE else INVISIBLE
         }
 
         companion object {
@@ -101,7 +101,7 @@ class RedditTopListAdapter(private val retry: () -> Unit) :
         itemView: View,
         private val listener: OnItemClickListener?
     ) : RecyclerView.ViewHolder(itemView) {
-        fun bindItems(item: PostItem?) {
+        fun bindItems(item: PostData?) {
             item?.let {
                 val context = itemView.context
                 itemView.selftext.text = item.selftext

@@ -1,49 +1,32 @@
 package tronum.redditclient.model
 
 import androidx.lifecycle.*
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
-import io.reactivex.disposables.CompositeDisposable
-import tronum.redditclient.api.RedditApiService
+import androidx.lifecycle.Transformations.map
+import androidx.lifecycle.Transformations.switchMap
+import tronum.redditclient.db.RedditPostRepository
 
-class RedditTopListViewModel: ViewModel() {
-    private val redditApiService = RedditApiService.create()
-    private val redditTopDataSourceFactory: RedditTopDataSourceFactory
-    private val compositeDisposable = CompositeDisposable()
-
-    var data: LiveData<PagedList<PostItem>>
-    var state: LiveData<State>
-
-    init {
-        redditTopDataSourceFactory = RedditTopDataSourceFactory(redditApiService, compositeDisposable, maxSize)
-        val config = PagedList.Config.Builder()
-            .setPageSize(pageSize)
-            .setInitialLoadSizeHint(pageSize)
-            .setEnablePlaceholders(false)
-            .build()
-        data = LivePagedListBuilder<String, PostItem>(redditTopDataSourceFactory, config).build()
-        state = Transformations.switchMap<RedditTopDataSource, State>(redditTopDataSourceFactory.topDataSourceLiveData, RedditTopDataSource::state)
+class RedditTopListViewModel(repository: RedditPostRepository): ViewModel() {
+    private val triggerData = MutableLiveData<Any>()
+    private val repoResult = map(triggerData) {
+        repository.getPosts()
     }
 
+    val data = switchMap(repoResult) { it.data }!!
+    val networkState = switchMap(repoResult) { it.networkState }!!
+
     fun retry() {
-        redditTopDataSourceFactory.topDataSourceLiveData.value?.retry()
+        repoResult?.value?.retry?.invoke()
     }
 
     fun refresh() {
-        redditTopDataSourceFactory.topDataSourceLiveData.value?.invalidate()
+        repoResult.value?.refresh?.invoke()
+    }
+
+    fun showData() {
+        triggerData.value = ""
     }
 
     fun listIsEmpty(): Boolean {
         return data.value?.isEmpty() ?: true
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        compositeDisposable.dispose()
-    }
-
-    companion object {
-        private const val pageSize = 10
-        private const val maxSize = 50
     }
 }
